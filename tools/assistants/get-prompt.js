@@ -42,7 +42,6 @@ Leeloo: Output improved vision that takes into account values.
 `
 
 
-const OPENAI_API_KEY = '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';
 
 const openai = new OpenAI({
     apiKey: OPENAI_API_KEY,
