@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "ageGroup" DROP NOT NULL,
+ALTER COLUMN "careerStage" DROP NOT NULL;

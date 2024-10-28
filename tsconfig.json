@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "es2020",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "baseUrl": "./",
+    "paths": {
+      "utils/*": ["layer/utils/*"],
+      "types": ["layer/types"]
+    }
+  },
+  "include": ["functions/**/*.ts", "layer/**/*.ts"],
+}

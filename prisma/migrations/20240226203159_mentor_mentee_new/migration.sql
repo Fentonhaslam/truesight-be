@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "Mentee" ALTER COLUMN "selfAware" SET DATA TYPE TEXT,
+ALTER COLUMN "meaningfulCareer" SET DATA TYPE TEXT,
+ALTER COLUMN "seekGuidance" SET DATA TYPE TEXT;
+
+-- AlterTable
+ALTER TABLE "Mentor" ALTER COLUMN "mentoringExperience" SET DATA TYPE TEXT,
+ALTER COLUMN "commitTime" SET DATA TYPE TEXT;

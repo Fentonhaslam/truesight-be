@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Minimal Stack with /getInsights endpoint
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+Resources:
+  InsightsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Stage
+      Cors:
+        AllowOrigins: "'*'"
+        AllowHeaders: "'*'"
+        AllowMethods: "'GET'"
+
+  GetInsightsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/insights/
+      Handler: get-insights-handler.lambdaHandler
+      Runtime: nodejs18.x
+      Timeout: 10
+      Role: !GetAtt InsightsFunctionRole.Arn
+      Events:
+        GetInsightsApiEvent:
+          Type: Api
+          Properties:
+            Path: /getInsights
+            Method: get
+            RestApiId: !Ref InsightsApi
+
+  InsightsFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InsightsLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+
+Outputs:
+  InsightsApiEndpoint:
+    Description: 'API Gateway endpoint URL for /getInsights'
+    Value: !Sub 'https://${InsightsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/getInsights'

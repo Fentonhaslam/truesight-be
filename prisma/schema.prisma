@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model User {
+  userId           String          @id @default(uuid())
+  createdAt        DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime        @default(now()) @db.Timestamptz(6)
+  email            String          @unique
+  firstName        String
+  lastName         String
+  adminFlag        Boolean         @default(false)
+  cvObjectKey      String?
+  threadId         String
+  ageGroup         String?
+  careerStage      String?
+  locations        String[]
+  suggestedCareers String[]
+  skills           String[]
+  interests        String[]
+  values           String[]
+  vision           String
+  selections       UserSelection[] // One-to-many relationship with UserSelection
+}
+
+model UserSelection {
+  selectionId String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId      String
+  option      String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  threadId    String?
+  @@unique([userId, option])
+}
