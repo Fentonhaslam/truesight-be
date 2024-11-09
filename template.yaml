@@ -1,5 +1,6 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+  - AWS::Serverless-2016-10-31
 Description: Minimal Stack with /getInsights endpoint
 
 Parameters:
@@ -41,7 +42,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -50,16 +51,16 @@ Resources:
       Policies:
         - PolicyName: InsightsLambdaPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: 'arn:aws:logs:*:*:*'
+                Resource: "arn:aws:logs:*:*:*"
 
 Outputs:
   InsightsApiEndpoint:
-    Description: 'API Gateway endpoint URL for /getInsights'
-    Value: !Sub 'https://${InsightsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/getInsights'
+    Description: "API Gateway endpoint URL for /getInsights"
+    Value: !Sub "https://${InsightsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/getInsights"
