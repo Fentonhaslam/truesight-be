@@ -1,7 +1,7 @@
 import puppeteer from "puppeteer";
 import readline from "readline";
 
-const API_KEY = "EdWUBshrbnhNE8tRHptCJCD4iL4TzbygqF0W7IBm";
+const API_KEY = "";
 const LANGUAGE = "en";
 const LOCALE = "us";
 const TIMEOUT_MS = 60000;
