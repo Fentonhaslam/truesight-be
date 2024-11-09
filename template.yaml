@@ -19,6 +19,14 @@ Globals:
     Timeout: 30
     Architectures:
       - x86_64
+    Environment:
+      Variables:
+        STAGE: !Sub '${Stage}'
+        SECRETS_MAP: !Sub |
+          {
+            "THE_NEWS_API_KEY": "/news-api-key-${Stage}/api_key",
+            "OPENAI_API_KEY": "/openai-${Stage}/api_key"
+          }
 
 Metadata: &esbuild_props
   Minify: true
