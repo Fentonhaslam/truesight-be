@@ -1,16 +1,32 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform:
   - AWS::Serverless-2016-10-31
-Description: Minimal Stack with /getInsights endpoint
+Description: Insights Stack
 
 Parameters:
   Stage:
     Type: String
-    Default: dev
     AllowedValues:
       - dev
       - test
       - prod
+  AssistantHash:
+    Type: String
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 30
+    Architectures:
+      - x86_64
+
+Metadata: &esbuild_props
+  Minify: true
+  Target: 'es2020'
+  External:
+    - 'utils/*'
+    - 'types/*'
+  Sourcemap: true
 
 Resources:
   InsightsApi:
@@ -18,27 +34,24 @@ Resources:
     Properties:
       StageName: !Ref Stage
       Cors:
-        AllowOrigins: "'*'"
+        AllowOrigin: "'*'"
         AllowHeaders: "'*'"
-        AllowMethods: "'GET'"
+        AllowMethods: "'*'"
 
-  GetInsightsFunction:
-    Type: AWS::Serverless::Function
+  LambdaDefaultPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      CodeUri: functions/insights/
-      Handler: get-insights-handler.lambdaHandler
-      Runtime: nodejs18.x
-      Timeout: 10
-      Role: !GetAtt InsightsFunctionRole.Arn
-      Events:
-        GetInsightsApiEvent:
-          Type: Api
-          Properties:
-            Path: /getInsights
-            Method: get
-            RestApiId: !Ref InsightsApi
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: 'arn:aws:logs:*:*:*'
 
-  InsightsFunctionRole:
+  LambdaDefaultRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -48,19 +61,40 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
-      Policies:
-        - PolicyName: InsightsLambdaPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "arn:aws:logs:*:*:*"
+      ManagedPolicyArns:
+        - !Ref LambdaDefaultPolicy
+
+  SharedLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: SharedLayer
+      ContentUri: layer/
+      CompatibleRuntimes:
+        - nodejs18.x
+      Description: A layer with utils and types
+    Metadata:
+     BuildMethod: makefile
+
+  GetInsightsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/insights/
+      Handler: get-insights-handler.lambdaHandler
+      Layers:
+        - !Ref SharedLayer
+      Role: !GetAtt LambdaDefaultRole.Arn
+      Timeout: 60
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        <<: *esbuild_props
+        EntryPoints:
+          - get-insights-handler.ts
 
 Outputs:
-  InsightsApiEndpoint:
-    Description: "API Gateway endpoint URL for /getInsights"
-    Value: !Sub "https://${InsightsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/getInsights"
+  API:
+    Description: 'API Gateway endpoint URL for /getInsights'
+    Value: !Sub 'https://${InsightsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/'
