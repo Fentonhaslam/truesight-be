@@ -87,6 +87,13 @@ Resources:
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
+      Events:
+        GetInsightsApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref InsightsApi
+            Path: /getInsights
+            Method: GET
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
