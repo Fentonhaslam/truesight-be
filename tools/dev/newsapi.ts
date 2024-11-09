@@ -1,5 +1,4 @@
-import puppeteer from "puppeteer";
-import readline from "readline";
+import puppeteer, { Browser } from "puppeteer";
 
 const API_KEY = "";
 const LANGUAGE = "en";
@@ -7,12 +6,15 @@ const LOCALE = "us";
 const TIMEOUT_MS = 60000;
 const NEWS_ENDPOINT = "top";
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+interface ArticleData {
+  url: string;
+  h1: string;
+  text: string[];
+}
 
-rl.question("Enter company name: ", async (searchQuery) => {
+export const searchAndScrapeNewsService = async (
+  searchQuery: string
+): Promise<ArticleData[] | void> => {
   const encodedLang = encodeURIComponent(LANGUAGE);
   const encodedLocale = encodeURIComponent(LOCALE);
   const encodedApiKey = encodeURIComponent(API_KEY);
@@ -21,17 +23,19 @@ rl.question("Enter company name: ", async (searchQuery) => {
     searchQuery
   )}`;
 
-  console.log(`Fetching news articles for query: "${searchQuery}"...`);
+  // console.log(`Fetching news articles for query: "${searchQuery}"...`);
 
-  const getNewsData = async () => {
+  const getNewsData = async (): Promise<string[]> => {
     try {
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Error fetching news headlines.");
       }
       const body = await response.json();
-      const articleUrls = body.data.map((article) => article.url);
-      console.log(`Found ${articleUrls.length} articles.`);
+      const articleUrls = body.data.map(
+        (article: { url: string }) => article.url
+      );
+      // console.log(`Found ${articleUrls.length} articles.`);
       return articleUrls;
     } catch (error) {
       console.error("Error in getNewsData:", error);
@@ -39,13 +43,13 @@ rl.question("Enter company name: ", async (searchQuery) => {
     }
   };
 
-  const scrapeArticles = async (urls) => {
-    const browser = await puppeteer.launch({ headless: true });
+  const scrapeArticles = async (urls: string[]): Promise<ArticleData[]> => {
+    const browser: Browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-    const results = [];
+    const results: ArticleData[] = [];
 
     for (let url of urls) {
-      console.log(`Scraping URL: ${url}`);
+      // console.log(`Scraping URL: ${url}`);
       try {
         await page.goto(url, {
           waitUntil: "networkidle2",
@@ -82,11 +86,11 @@ rl.question("Enter company name: ", async (searchQuery) => {
             "section p",
           ];
 
-          let contentText = [];
+          let contentText: string[] = [];
 
           contentSelectors.forEach((selector) => {
             document.querySelectorAll(selector).forEach((element) => {
-              contentText.push(element.innerText);
+              contentText.push((element as HTMLElement).innerText);
             });
           });
 
@@ -98,8 +102,8 @@ rl.question("Enter company name: ", async (searchQuery) => {
           h1: header,
           text: contentBlocks,
         });
-        console.log(`Scraped header: ${header}`);
-        console.log(`Found ${contentBlocks.length} content blocks.`);
+        // console.log(`Scraped header: ${header}`);
+        // console.log(`Found ${contentBlocks.length} content blocks.`);
       } catch (error) {
         console.error(`Error scraping ${url}:`, error);
         results.push({
@@ -114,14 +118,13 @@ rl.question("Enter company name: ", async (searchQuery) => {
   };
 
   const urls = await getNewsData();
-  console.dir({ urls }, { depth: null });
+  // console.dir({ urls }, { depth: null });
 
   if (urls.length) {
     const scrapeResults = await scrapeArticles(urls);
-    console.dir(scrapeResults, { depth: null });
+    // console.dir(scrapeResults, { depth: null });
+    return scrapeResults;
   } else {
-    console.log("No article URLs found!");
+    console.log("No article URLs found");
   }
-
-  rl.close();
-});
+};
