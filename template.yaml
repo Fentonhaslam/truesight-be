@@ -101,7 +101,7 @@ Resources:
           Properties:
             RestApiId: !Ref InsightsApi
             Path: /getInsights
-            Method: GET
+            Method: POST
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
