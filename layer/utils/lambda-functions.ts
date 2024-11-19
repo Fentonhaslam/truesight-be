@@ -180,7 +180,7 @@ export const generateResponse = (statusCode: number, body: any = null): APIGatew
 export const generateHeaders = (): Record<string, string> => ({
   'Access-Control-Allow-Headers': '*',
   'Access-Control-Allow-Methods': '*',
-  'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN,
+  'Access-Control-Allow-Origin': '*',
   'Cache-Control': 'no-cache',
 });
 

@@ -45,7 +45,7 @@ Resources:
         AllowOrigin: "'*'"
         AllowHeaders: "'*'"
         AllowMethods: "'*'"
-
+        
   LambdaDefaultPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -58,6 +58,11 @@ Resources:
               - logs:CreateLogStream
               - logs:PutLogEvents
             Resource: 'arn:aws:logs:*:*:*'
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+              - secretsmanager:DescribeSecret
+            Resource: 'arn:aws:secretsmanager:*:*:secret:*'
 
   LambdaDefaultRole:
     Type: AWS::IAM::Role
@@ -113,3 +118,5 @@ Outputs:
   API:
     Description: 'API Gateway endpoint URL for /getInsights'
     Value: !Sub 'https://${InsightsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/'
+    Export:
+      Name: !Sub '${AssistantHash}-API'
