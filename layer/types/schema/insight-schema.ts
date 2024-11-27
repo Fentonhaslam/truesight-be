@@ -7,4 +7,11 @@ export const InsightSchema = z.object({
   publishedAt: z.string().optional(), // ISO string format
 });
 
+export const ArticleDataSchema = z.object({
+  url: z.string(),
+  h1: z.string(),
+  text: z.array(z.string()),
+});
+
+export type ArticleData = z.infer<typeof ArticleDataSchema>;
 export type Insight = z.infer<typeof InsightSchema>;

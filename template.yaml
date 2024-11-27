@@ -24,7 +24,7 @@ Globals:
         STAGE: !Sub '${Stage}'
         SECRETS_MAP: !Sub |
           {
-            "THE_NEWS_API_KEY": "/news-api-key-${Stage}/api_key",
+            "NEWS_API_KEY": "/news-api-key-${Stage}/api_key",
             "OPENAI_API_KEY": "/openai-${Stage}/api_key"
           }
 
@@ -96,7 +96,7 @@ Resources:
       Layers:
         - !Ref SharedLayer
       Role: !GetAtt LambdaDefaultRole.Arn
-      Timeout: 60
+      Timeout: 120
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM

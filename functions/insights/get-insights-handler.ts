@@ -1,7 +1,7 @@
 import { APIGatewayProxyResultV2 } from 'aws-lambda';
 import { generateNonStreamingHandler, generateResponse, LambdaError } from 'utils/lambda-functions';
 import { Insight } from 'types'; // A helper function to fetch data from specified sources
-import { fetchFeedData } from 'utils/scaper';
+import { searchAndScrapeNewsService } from 'utils/scaper';
 
 import { getOpenAIClient } from 'utils/openai-client';
 
@@ -30,6 +30,10 @@ export const lambdaHandler = generateNonStreamingHandler(async (): Promise<APIGa
     try {
 
         // Pass the extracted headlines to OpenAI for analysis
+        console.log('Fetching and analyzing insights...');
+        const articles = await searchAndScrapeNewsService("Adidas");
+        console.log("Validated articles:", articles);
+        
         const structuredInsights = await analyzeInsights(exampleInsights);
 
         return generateResponse(200, structuredInsights);
@@ -39,22 +43,22 @@ export const lambdaHandler = generateNonStreamingHandler(async (): Promise<APIGa
     }
 });
 
-const getInsights = async (sources: string[]): Promise<Insight[]> => {
-    const results: Insight[] = [];
-    for (const source of sources) {
-        const articles = await fetchFeedData(source); // Assume this function fetches and parses XML data
-        articles.forEach(article => {
-            const insight: Insight = {
-                source,
-                headline: article.title,
-                summary: article.summary,
-                publishedAt: article.publishedAt,
-            };
-            results.push(insight);
-        });
-    }
-    return results;
-};
+// const getInsights = async (sources: string[]): Promise<Insight[]> => {
+//     const results: Insight[] = [];
+//     for (const source of sources) {
+//         const articles = await searchAndScrapeNewsService(source); // Assume this function fetches and parses XML data
+//         articles.forEach(article => {
+//             const insight: Insight = {
+//                 source,
+//                 headline: article.title,
+//                 summary: article.summary,
+//                 publishedAt: article.publishedAt,
+//             };
+//             results.push(insight);
+//         });
+//     }
+//     return results;
+// };
 
 const analyzeInsights = async (insights: Insight[]) => {
     const headlines = insights.map(insight => insight.headline);
