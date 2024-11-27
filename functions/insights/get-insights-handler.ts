@@ -1,7 +1,8 @@
-import { APIGatewayProxyResultV2 } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { generateNonStreamingHandler, generateResponse, LambdaError } from 'utils/lambda-functions';
 import { Insight } from 'types'; // A helper function to fetch data from specified sources
 import { searchAndScrapeNewsService } from 'utils/scaper';
+import { z } from 'zod';
 
 import { getOpenAIClient } from 'utils/openai-client';
 
@@ -26,12 +27,18 @@ const exampleInsights: Insight[] = [
   },
 ];
 
-export const lambdaHandler = generateNonStreamingHandler(async (): Promise<APIGatewayProxyResultV2> => {
+export const lambdaHandler = generateNonStreamingHandler(async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
     try {
-
+        const eventBody = parseBodyFromEvent(event, z.object({
+            searchQuery: z.string(),
+        }));
+        if (!eventBody) {
+            throw new LambdaError('Missing search query', 400);
+        }
+        console.log('Received search query:', eventBody.searchQuery);
         // Pass the extracted headlines to OpenAI for analysis
         console.log('Fetching and analyzing insights...');
-        const articles = await searchAndScrapeNewsService("British Airways");
+        const articles = await searchAndScrapeNewsService(eventBody.searchQuery);
         console.log("Validated articles:", articles);
         
         const structuredInsights = await analyzeInsights(exampleInsights);
@@ -43,22 +50,6 @@ export const lambdaHandler = generateNonStreamingHandler(async (): Promise<APIGa
     }
 });
 
-// const getInsights = async (sources: string[]): Promise<Insight[]> => {
-//     const results: Insight[] = [];
-//     for (const source of sources) {
-//         const articles = await searchAndScrapeNewsService(source); // Assume this function fetches and parses XML data
-//         articles.forEach(article => {
-//             const insight: Insight = {
-//                 source,
-//                 headline: article.title,
-//                 summary: article.summary,
-//                 publishedAt: article.publishedAt,
-//             };
-//             results.push(insight);
-//         });
-//     }
-//     return results;
-// };
 
 const analyzeInsights = async (insights: Insight[]) => {
     const headlines = insights.map(insight => insight.headline);
@@ -96,3 +87,20 @@ const analyzeInsights = async (insights: Insight[]) => {
 
     throw new Error("Failed to parse OpenAI response");
 };
+
+
+export function parseBodyFromEvent<T extends z.ZodRawShape>(
+    event: APIGatewayProxyEventV2,
+    schema: any
+  ): z.infer<z.ZodObject<T>> {
+    if (!event.body) {
+      throw new LambdaError('No body provided', 400);
+    }
+    try {
+      const eventBody = JSON.parse(event.body);
+      return schema.parse(eventBody);
+    } catch (error) {
+      console.error(error);
+      throw new LambdaError('Invalid body', 400);
+    }
+  }
