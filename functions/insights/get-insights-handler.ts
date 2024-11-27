@@ -31,7 +31,7 @@ export const lambdaHandler = generateNonStreamingHandler(async (): Promise<APIGa
 
         // Pass the extracted headlines to OpenAI for analysis
         console.log('Fetching and analyzing insights...');
-        const articles = await searchAndScrapeNewsService("Adidas");
+        const articles = await searchAndScrapeNewsService("British Airways");
         console.log("Validated articles:", articles);
         
         const structuredInsights = await analyzeInsights(exampleInsights);

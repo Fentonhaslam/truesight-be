@@ -73,7 +73,9 @@ export const searchAndScrapeNewsService = async (
   };
 
   const scrapeArticles = async (urls: string[]): Promise<ArticleData[]> => {
+    console.log("Scraping articles...");
     const browser: Browser = await puppeteer.launch({ headless: true });
+    console.log("Browser launched");
     const page = await browser.newPage();
     const results: ArticleData[] = [];
 
