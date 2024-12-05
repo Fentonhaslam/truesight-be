@@ -13,7 +13,7 @@
     "cfn-response-async": "^1.0.0",
     "nodemailer": "^6.9.14",
     "openai": "^4.40.2",
-    "puppeteer": "^23.7.1",
+    "puppeteer": "^23.9.0",
     "supabase": "^1.165.0",
     "uuid": "^10.0.0",
     "xml2js": "^0.6.2",
@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@types/xml2js": "^0.4.14",
-    "prisma": "^5.14.0"
+    "prisma": "^5.14.0",
+    "typescript": "^5.7.2"
   }
 }
